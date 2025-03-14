@@ -1,11 +1,30 @@
 import { Link } from "react-router-dom";
 import Header from "../components/Header";
+import { useState } from "react";
 import Otter from "../assets/otter.jpg";
 
 function LandingPage() {
+  const [showPopup, setShowPopup] = useState(true);
   return (
     <div>
       <Header />
+
+      {showPopup && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-96 text-center relative">
+            <button
+              className="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-xl"
+              onClick={() => setShowPopup(false)}
+            >
+              ✖
+            </button>
+            <h2 className="text-2xl font-semibold mb-2">Welcome to SmartInbox</h2>
+            <p className="text-gray-700">Currently, the Generative AI service in SmartInbox is not enabled due to cost considerations. However, the rest of the system is fully functional, and you can explore the user interface, manage emails, and save drafts seamlessly. We appreciate your understanding and look forward to enabling AI-powered automation in the future!.</p>
+          </div>
+        </div>
+      )}
+
+
       <div className="flex flex-col p-6 bg-slate-50 shadow-lg rounded-lg text-center items-center justify-center gap-4">
         {/* Hero Section */}
         <div className="flex flex-col md:flex-row w-full h-auto items-center justify-center px-5">
