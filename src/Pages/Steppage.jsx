@@ -3,16 +3,22 @@ import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import Otter5 from "../assets/otterpeaking.png";
 import {contextRequest} from "../../axios";
+import { useLocation } from 'react-router-dom';
 
 const AuthPage = () => {
   const [step, setStep] = useState(1); 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
-
+  const location = useLocation();
+  const email = location.state?.email;
+  console.log("VivekHello"+email);
+  
   // Handle Gmail Authentication
   const handleGmailAuth = async () => {
     try {
-      const response = await contextRequest.post("/auth");
+      const response = await contextRequest.post("/auth", {
+        email
+      });
       console.log(response);
       setIsAuthenticated(true); 
       setStep(2); 
@@ -59,7 +65,7 @@ const AuthPage = () => {
               </p>
               <button
                 className="w-full py-2 px-6 bg-green-500 text-white rounded-md shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
-                onClick={() => navigate("/DashBoard")} 
+                onClick={() => navigate("/DashBoard" , { state: { email: location.state.email } })} 
               >
                 Go to the Dashboard
               </button>
