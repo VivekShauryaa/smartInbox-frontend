@@ -10,33 +10,27 @@ import Otter from "../assets/otterhng.png";
 import Otter2 from "../assets/otter2.png";
 
 import "../App.css";
-import { useNavigate } from 'react-router-dom';
-import {contextRequest} from "../../axios";
+import { useNavigate, useLocation } from "react-router-dom";
+import { contextRequest } from "../../axios";
 
 function ContextForm() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const email = location.state?.email;
   // State to manage the current page of the multi-page form
-  const [currentPage, setCurrentPage] = useState(0); 
+  const [currentPage, setCurrentPage] = useState(0);
   // State to store all form data input by the user
   const [formData, setFormData] = useState({
-    name: "",
+    fullName: "",
     age: "",
-    occupation: "",
-    email: "",
-    password: "",
-    website: "",
-    courses: "",
-    schedule: "",
-    objectives: "",
-    attendance: "",
-    lateAssignments: "",
-    faqs: "",
-    grading: "",
-    importantDates: "",
+    jobTitle: "",
+    organization: "",
+    bio: "",
+    userType: "",
   });
+
   // State to manage the modal visibility
   const [isModalOpen, setIsModalOpen] = useState(false);
-
 
   const handleFormDataChange = (newData) => {
     setFormData({ ...formData, ...newData });
@@ -44,7 +38,7 @@ function ContextForm() {
 
   const handleNextPage = () => {
     if (currentPage === 4) {
-      setCurrentPage(5); 
+      setCurrentPage(5);
     } else {
       setCurrentPage((prev) => Math.min(prev + 1, 5));
     }
@@ -53,44 +47,37 @@ function ContextForm() {
   const handlePrevPage = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 0));
   };
-  // Function to generate the context text from the form data
-  const generateContextText = () => {
-    const contextText = `
-      Personal Information:
-      Name: ${formData.name}
-      Age: ${formData.age}
-      Occupation: ${formData.occupation}
-      Email: ${formData.email}
-      Website: ${formData.website}
-      
-      Courses and Schedule:
-      Courses Taught: ${formData.courses}
-      Schedule: ${formData.schedule}
-      Course Objectives: ${formData.objectives}
-      
-      Class Policies:
-      Attendance: ${formData.attendance}
-      Late Assignments: ${formData.lateAssignments}
-      FAQs: ${formData.faqs}
-      
-      Grading and Important Dates:
-      Grading Breakdown: ${formData.grading}
-      Important Dates: ${formData.importantDates}
-    `;
-    return contextText;
-  };
 
+  const generateContextText = () => {
+    let contextText = "";
+
+    Object.entries(formData).forEach(([key, value]) => {
+      const label =
+        typeof value === "object" && value.label
+          ? value.label
+          : key
+              .replace(/([A-Z])/g, " $1")
+              .replace(/^./, (str) => str.toUpperCase());
+
+      const answer =
+        typeof value === "object" && value.value !== undefined
+          ? value.value
+          : value;
+
+      contextText += `${label}: ${answer}\n\n`;
+    });
+
+    return contextText.trim();
+  };
 
   const handleSubmit = async () => {
     const contextText = generateContextText();
-    
-    // Create an object with the contextText to send as JSON
-    const data = { context: contextText ,
-      name: formData.name,
-      emailId: formData.email,     
-      password: formData.password
+    console.log(contextText);
+
+    const data = {
+      context: contextText,
+      email: email,
     };
-  
     // Send the data to the backend using Axios
     try {
       const response = await contextRequest.post("/saveContext", data, {
@@ -98,7 +85,7 @@ function ContextForm() {
           "Content-Type": "application/json",
         },
       });
-  
+
       if (response.status === 200) {
         console.log("Context saved successfully");
         setIsModalOpen(true);
@@ -114,8 +101,6 @@ function ContextForm() {
     setCurrentPage(1); // Move to the first form page after disclaimer acceptance
   };
 
-
-
   return (
     <div className="min-h-screen bg-custom-lightblue">
       <Header />
@@ -125,6 +110,7 @@ function ContextForm() {
         )}
         {currentPage === 1 && (
           <Page1
+            userType={formData.userType}
             formData={formData}
             handleNextPage={handleNextPage}
             handleFormDataChange={handleFormDataChange}
@@ -132,6 +118,7 @@ function ContextForm() {
         )}
         {currentPage === 2 && (
           <Page2
+            userType={formData.userType}
             formData={formData}
             handleNextPage={handleNextPage}
             handlePrevPage={handlePrevPage}
@@ -140,6 +127,7 @@ function ContextForm() {
         )}
         {currentPage === 3 && (
           <Page3
+            userType={formData.userType}
             formData={formData}
             handleNextPage={handleNextPage}
             handlePrevPage={handlePrevPage}
@@ -148,6 +136,7 @@ function ContextForm() {
         )}
         {currentPage === 4 && (
           <Page4
+            userType={formData.userType}
             formData={formData}
             handlePrevPage={handlePrevPage}
             handleFormDataChange={handleFormDataChange}
@@ -172,27 +161,30 @@ function ContextForm() {
           </div>
         )}
         <img
-      src={Otter2}
-      alt="Standing Otter"
-      className="w-64 h-100 bobbing-animation"
-      style={{
-        position: "absolute",
-        top: "60%",
-        right: "10%",
-      }}
-    />
-         {/* Modal */}
-         {isModalOpen && (
+          src={Otter2}
+          alt="Standing Otter"
+          className="w-64 h-100 bobbing-animation"
+          style={{
+            position: "absolute",
+            top: "60%",
+            right: "10%",
+          }}
+        />
+        {/* Modal */}
+        {isModalOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
             <div className="bg-white rounded-lg shadow-lg p-6 w-1/2 flex flex-col">
               <h2 className="text-2xl font-semibold mb-4 text-green-600">
                 🎉 Context Saved Successfully!
               </h2>
               <p className="text-gray-700 mb-6">
-                Your context has been saved. You can now proceed to Grant Gmail Access.
+                Your context has been saved. You can now proceed to Grant Gmail
+                Access.
               </p>
               <button
-                 onClick={() => navigate('/setuppage', { state: { email: formData.email } })}
+                onClick={() =>
+                  navigate("/setuppage", { state: { email: email } })
+                }
                 className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
               >
                 Proceed to Grant Access
